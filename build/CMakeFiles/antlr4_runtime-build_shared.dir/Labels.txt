@@ -1,0 +1,6 @@
+# Target labels
+ antlr4_runtime
+# Source files and their labels
+/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/antlr4_runtime-build_shared
+/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/antlr4_runtime-build_shared.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/antlr4_runtime/src/antlr4_runtime-stamp/antlr4_runtime-build_shared.rule

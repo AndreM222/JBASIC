@@ -1,0 +1,13 @@
+# Target labels
+ antlr4_runtime
+# Source files and their labels
+/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/antlr4_runtime
+/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/antlr4_runtime.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/antlr4_runtime-complete.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/antlr4_runtime/src/antlr4_runtime-stamp/antlr4_runtime-build.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/antlr4_runtime/src/antlr4_runtime-stamp/antlr4_runtime-configure.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/antlr4_runtime/src/antlr4_runtime-stamp/antlr4_runtime-download.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/antlr4_runtime/src/antlr4_runtime-stamp/antlr4_runtime-install.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/antlr4_runtime/src/antlr4_runtime-stamp/antlr4_runtime-mkdir.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/antlr4_runtime/src/antlr4_runtime-stamp/antlr4_runtime-patch.rule
+/Users/andre/Workspace/classes/comp-lang/final-project/build/antlr4_runtime/src/antlr4_runtime-stamp/antlr4_runtime-update.rule

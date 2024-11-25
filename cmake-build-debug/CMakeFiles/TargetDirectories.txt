@@ -1,0 +1,6 @@
+/Users/andre/Workspace/classes/comp-lang/final-project/cmake-build-debug/CMakeFiles/antlr4_runtime.dir
+/Users/andre/Workspace/classes/comp-lang/final-project/cmake-build-debug/CMakeFiles/antlr4_runtime-build_static.dir
+/Users/andre/Workspace/classes/comp-lang/final-project/cmake-build-debug/CMakeFiles/antlr4_runtime-build_shared.dir
+/Users/andre/Workspace/classes/comp-lang/final-project/cmake-build-debug/CMakeFiles/AndreBasic.dir
+/Users/andre/Workspace/classes/comp-lang/final-project/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/andre/Workspace/classes/comp-lang/final-project/cmake-build-debug/CMakeFiles/rebuild_cache.dir
