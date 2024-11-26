@@ -7,7 +7,7 @@
 
 using namespace antlr4;
 
-const std::string SCRIPTTYPE = ".app";
+const std::string SCRIPTTYPE = ".jbas";
 
 int main (int argc, char *argv[]) {
 
@@ -17,7 +17,7 @@ int main (int argc, char *argv[]) {
         file = argv[1];
 
     // Check for a valid input
-    if(file.empty() || file.size() < SCRIPTTYPE.size() + 1 || file.substr(file.size() - 4, 4) != SCRIPTTYPE)
+    if(file.empty() || file.size() < SCRIPTTYPE.size() + 1 || file.substr(file.find_last_of("."), SCRIPTTYPE.size()) != SCRIPTTYPE)
     {
         std::cerr << "Invalid input: " << file.c_str() << std::endl;
         return 1;
@@ -42,8 +42,11 @@ int main (int argc, char *argv[]) {
 
     BasicParser::ProgContext *tree = parser.prog();
 
-    BasicVisitorImpl visitor;
-    visitor.visitFile(tree);
+    /*BasicVisitorImpl visitor;*/
+    /*visitor.visitFile(tree);*/
+
+    BasicBaseVisitor visitor;
+    visitor.visitProg(tree);
 
     return 0;
 }

@@ -2,6 +2,7 @@
 #include <any>
 #include <iostream>
 #include <ostream>
+#include <vector>
 
 std::unordered_map <BasicParser::LinenumberContext*, BasicParser::LineContext*> listOfLines;
 std::unordered_map<std::string, std::any> varValues;
@@ -35,7 +36,7 @@ void BasicVisitorImpl::statementAction(BasicParser::AmprstmtContext *rule)
             for(BasicParser::ExpressionContext* action : printList->expression())
             {
                 // Get casted variable value
-                std::string msg = stringCast(expAction(action), &varValues);
+                std::string msg = numToStringCast(expAction(action));
 
                 // Print if value exists
                 if (!msg.empty()) std::cout << msg << std::endl;
@@ -93,7 +94,7 @@ std::any BasicVisitorImpl::funcAction(BasicParser::Func_Context *funcType)
 
     if(funcType->number())
     {
-        return numberCast(funcType, &varValues);
+        return stringToNumberCast(funcType->getText());
     }
 
     if(funcType->vardecl())
@@ -109,79 +110,102 @@ std::any BasicVisitorImpl::funcAction(BasicParser::Func_Context *funcType)
     return {};
 }
 
-std::any BasicVisitorImpl::addMathAction(std::vector<BasicParser::RelationalExpressionContext*> expr)
-{
-    for(BasicParser::RelationalExpressionContext* currExp : expr)
-    {
-        std::string symbol;
+std::any BasicVisitorImpl::addMathAction(std::vector<BasicParser::RelationalExpressionContext*> expr) {
+    double value = 0;
+    std::vector<std::any> operand;
 
-        for(BasicParser::AddingExpressionContext* action : currExp->addingExpression())
-        {
-            if(!action->PLUS().empty()) {
-                symbol = symbolAction(action->PLUS());
-                if(!action->multiplyingExpression().empty()) symbol = multMathAction(action->multiplyingExpression());
-            } else if(!action->MINUS().empty()){
-                symbol = symbolAction(action->MINUS());
-                if(!action->multiplyingExpression().empty()) symbol = multMathAction(action->multiplyingExpression());
-            } else if(!action->multiplyingExpression().empty()) symbol = multMathAction(action->multiplyingExpression());
+    for (BasicParser::RelationalExpressionContext* currExp : expr) {
+        for (BasicParser::AddingExpressionContext* action : currExp->addingExpression()) {
+            // Delegate to multMathAction to compute the full multiplyingExpression.
+            std::vector<std::any> tmpVals = multMathAction(action->multiplyingExpression());
+            operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+            // std::cout << "======================="<< action->getText() <<"======================" <<  std::endl;
+            // std::cout << "Processing AddMathAction Node: " << action->getText() << std::endl;
+
+            for(auto i = 0; i < action->PLUS().size(); i++)
+            {
+                value = std::any_cast<double>(operand.back());
+                operand.pop_back();
+                operand.back() =  std::any_cast<double>(operand.back()) + value;
+                // std::cout << "Adding operand: " << value << ", New Value: " << std::any_cast<double>(operand.back()) << std::endl;
+            }
+
+            for(auto i = 0; i < action->MINUS().size(); i++) {
+                value = std::any_cast<double>(operand.back());
+                operand.pop_back();
+                operand.back() = std::any_cast<double>(operand.back()) - value;
+                // std::cout << "Subtracting operand: " << value << ", New Value: " << std::any_cast<double>(operand.back()) << std::endl;
+            }
         }
     }
 
-    std::cout << std::endl;
-
-    return {};
+    // // std::cout << "Final computed value in addMathAction: " << std::any_cast<double>(operand.front()) << std::endl;
+    return numToNumCast(operand.front());
 }
 
-std::string BasicVisitorImpl::symbolAction(std::vector<antlr4::tree::TerminalNode*> addExpr)
-{
-    std::string symbol;
-    for (auto action : addExpr) {
-        std::cout << action->getSymbol()->getText();
-        symbol = action->getSymbol()->getText();
+std::vector<std::any> BasicVisitorImpl::multMathAction(std::vector<BasicParser::MultiplyingExpressionContext*> mulExpr) {
+    double value = 0;  // Start with 0 as the initial value.
+    std::vector<std::any> operand;
+
+    for (BasicParser::MultiplyingExpressionContext* action : mulExpr) {
+
+        std::vector<std::any> tmpVals = expoMathAction(action->exponentExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+        // std::cout << "======================="<< action->getText() <<"======================" <<  std::endl;
+        // std::cout << "Processing MultMathAction Node: " << action->getText() << std::endl;
+
+        for(auto i = 0; i < action->TIMES().size(); i++)
+        {
+            value = std::any_cast<double>(operand.back());  // Apply multiplication.value
+            operand.pop_back();  // Apply multiplication.
+            operand.back() = std::any_cast<double>(operand.back()) * value;
+            // std::cout << "Multiplying operand: " << value << ", New Value: " << std::any_cast<double>(operand.front()) << " Size: " << action->TIMES().size() << std::endl;
+        }
+
+        for(auto i = 0; i < action->DIV().size(); i++)
+        {
+            value = std::any_cast<double>(operand.back());  // Apply multiplication.
+            operand.pop_back();  // Apply multiplication.
+            operand.back() = std::any_cast<double>(operand.back()) / value;
+            action->DIV().pop_back();
+            // std::cout << "Dividing operand: " << value << ", New Value: " << std::any_cast<double>(operand.back()) << std::endl;
+        }
     }
 
-    return symbol;
+    // std::cout << "Final computed value in multMathAction: " << std::any_cast<double>(operand[0]) << std::endl;
+    return operand;
 }
 
-std::string BasicVisitorImpl::multMathAction(std::vector<BasicParser::MultiplyingExpressionContext*> mulExpr)
-{
-    std::string symbol;
+std::vector<std::any> BasicVisitorImpl::expoMathAction(std::vector<BasicParser::ExponentExpressionContext*> expoExpr) {
+    std::vector<std::any> value;
 
-    for(BasicParser::MultiplyingExpressionContext *action : mulExpr)
-    {
-        if(!action->TIMES().empty()){
-            symbol =  symbolAction(action->TIMES());
-            if(!action->exponentExpression().empty()) symbol = expoMathAction(action->exponentExpression());
-        } else if(!action->DIV().empty()){
-            symbol = symbolAction(action->DIV());
-            if(!action->exponentExpression().empty()) symbol = expoMathAction(action->exponentExpression());
-        } else if(!action->exponentExpression().empty()) symbol = expoMathAction(action->exponentExpression());
+    for (BasicParser::ExponentExpressionContext* action : expoExpr) {
+        std::any base = signMathAction(action->signExpression());
+
+        // std::cout << "======================="<< action->getText() <<"======================" <<  std::endl;
+        if (!action->EXPONENT().empty()) {
+            // value = pow(value, base); // Exponentiation.
+        } else {
+            value.push_back(base); // Default case.
+        }
     }
 
-    return symbol;
+    // std::cout << "Computed value in expoMathAction: " << std::any_cast<double>(value.front()) << std::endl; // Debugging output.
+
+    return value;
 }
 
-std::string BasicVisitorImpl::expoMathAction(std::vector<BasicParser::ExponentExpressionContext*> expoExpr)
-{
-    std::string symbol;
-
-    for(BasicParser::ExponentExpressionContext *action : expoExpr)
-    {
-        if(!action->EXPONENT().empty()) symbol = symbolAction(action->EXPONENT());
-        else if(!action->signExpression().empty()) symbol = signMathAction(action->signExpression());
+std::any BasicVisitorImpl::signMathAction(std::vector<BasicParser::SignExpressionContext*> signExpr) {
+    for (BasicParser::SignExpressionContext* action : signExpr) {
+        // std::cout << "======================="<< action->getText() <<"======================" <<  std::endl;
+        if (action->func_()) {
+            double result = std::stod(numToStringCast(funcAction(action->func_())));
+            // std::cout << "Value in signMathAction: " << result << std::endl; // Debugging output.
+            // std::cout << "Symbol in signMathAction: " << action->getText() << std::endl; // Debugging output.
+            return result;
+        }
     }
 
-    return symbol;
-}
-
-std::string BasicVisitorImpl::signMathAction(std::vector<BasicParser::SignExpressionContext*> expoExpr)
-{
-    std::string symbol;
-
-    for(BasicParser::SignExpressionContext *action : expoExpr)
-    {
-        if(action->func_()) std::cout << stringCast(funcAction(action->func_()), &varValues);
-    }
-
-    return "";
+    return 0.0;
 }

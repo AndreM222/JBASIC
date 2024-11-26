@@ -1,13 +1,11 @@
 #include "BasicCasting.h"
 #include "BasicVisitorImpl.h"
 #include <string>
-#include <unordered_map>
 #include <any>
-#include "BasicParser.h"
 
-std::any numberCast(BasicParser::Func_Context *value, std::unordered_map<std::string, std::any> *varValues)
+std::any stringToNumberCast(std::string value)
 {
-    std::string valueText = value->getText();
+    std::string valueText = value;
 
     // Use stringstreams to detect the type
     if (valueText.find('.') == std::string::npos)
@@ -39,7 +37,7 @@ std::any numberCast(BasicParser::Func_Context *value, std::unordered_map<std::st
     return 0;
 }
 
-std::string stringCast(std::any value, std::unordered_map<std::string, std::any> *varValues)
+std::string numToStringCast(std::any value)
 {
     if(value.type() == typeid(std::string))
         return std::any_cast<std::string> (value);
@@ -54,4 +52,27 @@ std::string stringCast(std::any value, std::unordered_map<std::string, std::any>
         return std::to_string(std::any_cast<double> (value));
 
     return "";
+}
+
+std::any numToNumCast(std::any value)
+{
+    std::string newVal = numToStringCast(value);
+
+    if(newVal.find('.'))
+    {
+        for(auto i = newVal.size() - 1; 0 < i; i--)
+        {
+            if(newVal[i] != '0')
+            {
+                if(newVal[i] == '.') newVal.pop_back();
+                break;
+            }
+
+            newVal.pop_back();
+        }
+    }
+
+    value = stringToNumberCast(newVal);
+
+    return value;
 }

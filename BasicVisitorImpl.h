@@ -29,6 +29,14 @@ private:
      */
     void statementAction(BasicParser::AmprstmtContext *rule);
 
+
+    /*
+     * Values return depending on type
+     *
+     * @param func Rules to execute
+     */
+    std::any funcAction(BasicParser::Func_Context *func);
+
     /*
      * Expressions to be executed
      *
@@ -36,15 +44,31 @@ private:
      */
     std::any expAction(BasicParser::ExpressionContext *expr);
 
-    std::any funcAction(BasicParser::Func_Context *func);
-
+    /*
+     * Adding and subtraction expressions
+     *
+     * @param expr Rules to execute
+     */
     std::any addMathAction(std::vector<BasicParser::RelationalExpressionContext*> expr);
 
-    std::string symbolAction(std::vector<antlr4::tree::TerminalNode*> addExpr);
+    /*
+     * Division and multiplication expressions
+     *
+     * @param mulExpr Rules to execute
+     */
+    std::vector<std::any> multMathAction(std::vector<BasicParser::MultiplyingExpressionContext*> mulExpr);
 
-    std::string multMathAction(std::vector<BasicParser::MultiplyingExpressionContext*> mulExpr);
+    /*
+     * Exponent expression
+     *
+     * @param expoExpr Rules to execute
+     */
+    std::vector<std::any> expoMathAction(std::vector<BasicParser::ExponentExpressionContext*> expoExpr);
 
-    std::string expoMathAction(std::vector<BasicParser::ExponentExpressionContext*> expoExpr);
-
-    std::string signMathAction(std::vector<BasicParser::SignExpressionContext*> expoExpr);
+    /*
+     * Values used in expression expressions
+     *
+     * @param expoExpr Rules to execute
+     */
+    std::any signMathAction(std::vector<BasicParser::SignExpressionContext*> signExpr);
 };

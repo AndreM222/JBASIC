@@ -12,3 +12,6 @@
 > [!IMPORTANT]
 > This was started as a homewrok using ANTLR to explore
 > more but I will continue developing this when I have time.
+
+### Example
+There is an example script in the `testScripts` directory.

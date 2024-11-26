@@ -1,0 +1,9 @@
+10 レット N=10
+20 レット M=20
+30 レット J=30
+40 レット num=3.4
+50 レット test="Bye world"
+60 表示 M + num
+70 表示 "Hello World"
+80 表示 M - num
+90 表示 test
