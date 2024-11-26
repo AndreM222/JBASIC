@@ -121,7 +121,6 @@ std::any BasicVisitorImpl::addMathAction(std::vector<BasicParser::RelationalExpr
             // std::cout << "======================="<< action->getText() <<"======================" <<  std::endl;
             // std::cout << "Processing AddMathAction Node: " << action->getText() << std::endl;
 
-            std::cout << action->toStringTree() << std::endl;
             for(auto i = 0; i < action->PLUS().size(); i++)
             {
                 value = std::any_cast<double>(operand.back());
@@ -187,10 +186,10 @@ std::vector<std::any> BasicVisitorImpl::expoMathAction(std::vector<BasicParser::
         {
             for (auto i = 0; i < action->EXPONENT().size(); i++) {
                 value = std::any_cast<double>(operand.back());
-                std::cout <<  std::any_cast<double>(operand.back()) << std::endl;
+                // std::cout <<  std::any_cast<double>(operand.back()) << std::endl;
                 operand.pop_back();
                 operand.back() = pow(std::any_cast<double>(operand.back()), value); // Exponentiation.
-                std::cout <<  std::any_cast<double>(operand.back()) << std::endl;
+                // std::cout <<  std::any_cast<double>(operand.back()) << std::endl;
             }
         }
     }
