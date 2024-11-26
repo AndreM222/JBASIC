@@ -1,8 +1,6 @@
 #include "BasicVisitorImpl.h"
-#include <any>
 #include <iostream>
 #include <ostream>
-#include <vector>
 
 std::unordered_map <BasicParser::LinenumberContext*, BasicParser::LineContext*> listOfLines;
 std::unordered_map<std::string, std::any> varValues;
@@ -123,6 +121,7 @@ std::any BasicVisitorImpl::addMathAction(std::vector<BasicParser::RelationalExpr
             // std::cout << "======================="<< action->getText() <<"======================" <<  std::endl;
             // std::cout << "Processing AddMathAction Node: " << action->getText() << std::endl;
 
+            std::cout << action->toStringTree() << std::endl;
             for(auto i = 0; i < action->PLUS().size(); i++)
             {
                 value = std::any_cast<double>(operand.back());
@@ -168,7 +167,6 @@ std::vector<std::any> BasicVisitorImpl::multMathAction(std::vector<BasicParser::
             value = std::any_cast<double>(operand.back());  // Apply multiplication.
             operand.pop_back();  // Apply multiplication.
             operand.back() = std::any_cast<double>(operand.back()) / value;
-            action->DIV().pop_back();
             // std::cout << "Dividing operand: " << value << ", New Value: " << std::any_cast<double>(operand.back()) << std::endl;
         }
     }
@@ -178,22 +176,28 @@ std::vector<std::any> BasicVisitorImpl::multMathAction(std::vector<BasicParser::
 }
 
 std::vector<std::any> BasicVisitorImpl::expoMathAction(std::vector<BasicParser::ExponentExpressionContext*> expoExpr) {
-    std::vector<std::any> value;
+    std::vector<std::any> operand;
+    double value = 0;
 
     for (BasicParser::ExponentExpressionContext* action : expoExpr) {
-        std::any base = signMathAction(action->signExpression());
+        operand.push_back(signMathAction(action->signExpression()));
 
         // std::cout << "======================="<< action->getText() <<"======================" <<  std::endl;
-        if (!action->EXPONENT().empty()) {
-            // value = pow(value, base); // Exponentiation.
-        } else {
-            value.push_back(base); // Default case.
+        if(operand.size() > 1)
+        {
+            for (auto i = 0; i < action->EXPONENT().size(); i++) {
+                value = std::any_cast<double>(operand.back());
+                std::cout <<  std::any_cast<double>(operand.back()) << std::endl;
+                operand.pop_back();
+                operand.back() = pow(std::any_cast<double>(operand.back()), value); // Exponentiation.
+                std::cout <<  std::any_cast<double>(operand.back()) << std::endl;
+            }
         }
     }
 
-    // std::cout << "Computed value in expoMathAction: " << std::any_cast<double>(value.front()) << std::endl; // Debugging output.
+    // std::cout << "Computed value in expoMathAction: " << std::any_cast<double>(operand.front()) << std::endl; // Debugging output.
 
-    return value;
+    return operand;
 }
 
 std::any BasicVisitorImpl::signMathAction(std::vector<BasicParser::SignExpressionContext*> signExpr) {

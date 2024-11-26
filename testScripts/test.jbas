@@ -5,5 +5,5 @@
 50 レット test="Bye world"
 60 表示 M + num
 70 表示 "Hello World"
-80 表示 M - num
+80 表示 2 * 2
 90 表示 test

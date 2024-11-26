@@ -1,7 +1,4 @@
 #include "BasicCasting.h"
-#include "BasicVisitorImpl.h"
-#include <string>
-#include <any>
 
 std::any stringToNumberCast(std::string value)
 {
