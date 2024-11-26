@@ -42,11 +42,8 @@ int main (int argc, char *argv[]) {
 
     BasicParser::ProgContext *tree = parser.prog();
 
-    /*BasicVisitorImpl visitor;*/
-    /*visitor.visitFile(tree);*/
-
-    BasicBaseVisitor visitor;
-    visitor.visitProg(tree);
+    BasicVisitorImpl visitor;
+    visitor.visitFile(tree);
 
     return 0;
 }
