@@ -1,6 +1,0 @@
-/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/antlr4_runtime.dir
-/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/antlr4_runtime-build_static.dir
-/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/antlr4_runtime-build_shared.dir
-/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/JBasic.dir
-/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/edit_cache.dir
-/Users/andre/Workspace/classes/comp-lang/final-project/build/CMakeFiles/rebuild_cache.dir
