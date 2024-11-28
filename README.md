@@ -11,6 +11,13 @@
 | ^          | ^        |
 | と         | AND      |
 | か         | OR       |
+| ()         | ()       |
+| <>         | <>       |
+| >=         | >=       |
+| >          | >        |
+| <          | <        |
+| <=         | <=       |
+| =          | =        |
 
 > [!IMPORTANT]
 > This was started as a homewrok using ANTLR to explore
@@ -30,3 +37,11 @@ For now the options is:
 -   When using a string:
     -   \+ : Appends to string
     -   \- : Removes from string
+-   Can run comparative operations like
+    -   <> : Not equal to
+    -   \>= : Greater than or equal
+    -   \> : Greater than
+    -   < :Less then
+    -   <= :Less then or equal
+    -   = : equal
+- The brackets symbolize priority of runtime

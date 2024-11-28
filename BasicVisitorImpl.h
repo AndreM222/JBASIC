@@ -51,6 +51,13 @@ private:
     std::any relationsAction(BasicParser::ExpressionContext *expr);
 
     /*
+     * Operations to be executed
+     *
+     * @param expr Operations to execute
+     */
+    int relopAction(BasicParser::RelationalExpressionContext* currExp);
+
+    /*
      * Adding and subtraction expressions
      *
      * @param expr Rules to execute

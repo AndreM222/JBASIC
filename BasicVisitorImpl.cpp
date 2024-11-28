@@ -106,6 +106,11 @@ std::any BasicVisitorImpl::funcAction(BasicParser::Func_Context *funcType)
         return nullptr;
     }
 
+    if(funcType->LPAREN())
+    {
+        return expAction(funcType->expression());
+    }
+
     return {};
 }
 
@@ -121,8 +126,17 @@ std::any BasicVisitorImpl::relationsAction(BasicParser::ExpressionContext *expr)
 
     for (BasicParser::RelationalExpressionContext* currExp : expr->relationalExpression())
     {
-        std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
-        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+        if(currExp->relop())
+        {
+            operand.push_back(relopAction(currExp));
+        }
+
+        if(!currExp->addingExpression().empty())
+        {
+            std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+            operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+        }
     }
 
     while(totalAnd && totalOr)
@@ -187,6 +201,97 @@ std::any BasicVisitorImpl::relationsAction(BasicParser::ExpressionContext *expr)
     }
 
     return operand.front();
+}
+
+int BasicVisitorImpl::relopAction(BasicParser::RelationalExpressionContext* currExp)
+{
+    std::vector<std::any> operand;
+
+    if(currExp->relop()->EQ())
+    {
+        std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+        std::string value1 = numToStringCast(operand[0]);
+        std::string value2 = numToStringCast(operand[1]);
+
+        if (operand[0].type() == operand[0].type() && value1 == value2)
+            return 1;
+        else
+            return 0;
+    }
+
+    if(currExp->relop()->neq())
+    {
+        std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+        std::string value1 = numToStringCast(operand[0]);
+        std::string value2 = numToStringCast(operand[1]);
+
+        if (operand[0].type() != operand[0].type() || value1 != value2)
+            return 1;
+        else
+            return 0;
+    }
+
+    if(currExp->relop()->GT())
+    {
+        std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+        double value1 = std::stoi(numToStringCast(operand[0]));
+        double value2 = std::stoi(numToStringCast(operand[1]));
+
+        if (value1 > value2)
+            return 1;
+        else
+            return 0;
+    }
+
+    if(currExp->relop()->GTE())
+    {
+        std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+        double value1 = std::stoi(numToStringCast(operand[0]));
+        double value2 = std::stoi(numToStringCast(operand[1]));
+
+        if (value1 >= value2)
+            return 1;
+        else
+            return 0;
+    }
+
+    if(currExp->relop()->LT())
+    {
+        std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+        double value1 = std::stoi(numToStringCast(operand[0]));
+        double value2 = std::stoi(numToStringCast(operand[1]));
+
+        if (value1 < value2)
+            return 1;
+        else
+            return 0;
+    }
+
+    if(currExp->relop()->LTE())
+    {
+        std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+        double value1 = std::stoi(numToStringCast(operand[0]));
+        double value2 = std::stoi(numToStringCast(operand[1]));
+
+        if (value1 <= value2)
+            return 1;
+        else
+            return 0;
+    }
+
+    return 0;
 }
 
 std::vector<std::any> BasicVisitorImpl::addMathAction(std::vector<BasicParser::AddingExpressionContext*> currExp)
