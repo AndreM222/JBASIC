@@ -1,4 +1,5 @@
 #include "BasicVisitorImpl.h"
+#include <any>
 #include <iostream>
 #include <ostream>
 
@@ -60,7 +61,7 @@ std::any BasicVisitorImpl::expAction(BasicParser::ExpressionContext *expr)
 {
     if(!expr->relationalExpression().empty())
     {
-        return addMathAction(expr->relationalExpression());
+        return relationsAction(expr);
     }
 
     if(expr->func_())
@@ -108,69 +109,173 @@ std::any BasicVisitorImpl::funcAction(BasicParser::Func_Context *funcType)
     return {};
 }
 
-std::any BasicVisitorImpl::addMathAction(std::vector<BasicParser::RelationalExpressionContext*> expr)
+std::any BasicVisitorImpl::relationsAction(BasicParser::ExpressionContext *expr)
 {
-    double value = 0;
+    std::string val1 = "", val2 = "";
     std::vector<std::any> operand;
 
-    for (BasicParser::RelationalExpressionContext* currExp : expr)
+    int totalAnd = expr->AND().size();
+    int totalOr = expr->OR().size();
+
+    std::string currGroup = expr->getText();
+
+    for (BasicParser::RelationalExpressionContext* currExp : expr->relationalExpression())
     {
-        for (BasicParser::AddingExpressionContext* action : currExp->addingExpression())
+        std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+    }
+
+    while(totalAnd && totalOr)
+    {
+        int leftSymbol = currGroup.find( expr->AND(totalAnd - 1)->getText(), totalAnd);
+        auto rightSymbol = currGroup.find(expr->OR(totalOr - 1)->getText(), totalOr);
+        int difference = leftSymbol - rightSymbol;
+
+        if(difference > 0)
         {
-            std::vector<std::any> tmpVals = multMathAction(action->multiplyingExpression());
-            operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+            val1 = numToStringCast(operand.back());
+            operand.pop_back();
+            val2 = std::any_cast<std::string>(operand.back());
 
-            int totalMinus = action->MINUS().size();
-            int totalPlus = action->PLUS().size();
-            int minusPos = 0, plusPos = 0;
+            if ((!val2.empty() && val2 != "0") && (!val1.empty() && val1 != "0"))
+                operand.back() = 1;
+            else
+                operand.back() = 0;
 
-            std::string currGroup = action->getText();
+            totalAnd--;
+        }
+        else {
+            val1 = numToStringCast(operand.back());
+            operand.pop_back();
+            val2 = numToStringCast(operand.back());
 
-            while(totalMinus && totalPlus)
+            if ((!val2.empty() && val2 != "0") || (!val1.empty() && val1 != "0"))
+                operand.back() = 1;
+            else
+                operand.back() = 0;
+
+            totalOr--;
+        }
+    }
+
+    while(totalOr)
+    {
+        val1 = numToStringCast(operand.back());
+        operand.pop_back();
+        val2 = numToStringCast(operand.back());
+
+        if ((!val2.empty() && val2 != "0") || (!val1.empty() && val1 != "0"))
+            operand.back() = 1;
+        else
+            operand.back() = 0;
+
+        totalOr--;
+    }
+
+    while(totalAnd)
+    {
+        val1 = numToStringCast(operand.back());
+        operand.pop_back();
+        val2 = numToStringCast(operand.back());
+
+        if ((!val2.empty() && val2 != "0") && (!val1.empty() && val1 != "0"))
+            operand.back() = 1;
+        else
+            operand.back() = 0;
+
+        totalAnd--;
+    }
+
+    return operand.front();
+}
+
+std::vector<std::any> BasicVisitorImpl::addMathAction(std::vector<BasicParser::AddingExpressionContext*> currExp)
+{
+    std::any value;
+    std::vector<std::any> operand;
+
+    for (BasicParser::AddingExpressionContext* action : currExp)
+    {
+        std::vector<std::any> tmpVals = multMathAction(action->multiplyingExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
+
+        int totalMinus = action->MINUS().size();
+        int totalPlus = action->PLUS().size();
+
+        std::string currGroup = action->getText();
+
+        while(totalMinus && totalPlus)
+        {
+            int leftSymbol = currGroup.find(action->PLUS(totalPlus - 1)->getSymbol()->getText(), totalPlus);
+            int rightSymbol = currGroup.find(action->MINUS(totalMinus - 1)->getText(), totalMinus);
+
+            int difference = leftSymbol - rightSymbol;
+
+            if(difference > 0)
             {
-                int difference = currGroup.find_last_of('+' + plusPos) - currGroup.find_last_of('-' + minusPos);
-
-                if(difference > 0)
+                value = operand.back();
+                operand.pop_back();
+                if (value.type() == typeid(std::string) || operand.back().type() == typeid(std::string))
                 {
-                    value = std::any_cast<double>(operand.back());
-                    operand.pop_back();
-                    operand.back() =  std::any_cast<double>(operand.back()) + value;
-
-                    totalPlus--;
-                    plusPos++;
+                    operand.back() = numToStringCast(operand.back()).append(numToStringCast(value));
                 }
                 else {
-                    value = std::any_cast<double>(operand.back());
-                    operand.pop_back();
-                    operand.back() = std::any_cast<double>(operand.back()) - value;
-
-                    totalMinus--;
-                    minusPos++;
+                    operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) + std::stod(numToStringCast(value)));
                 }
-            }
-
-            while(totalPlus)
-            {
-                value = std::any_cast<double>(operand.back());
-                operand.pop_back();
-                operand.back() = std::any_cast<double>(operand.back()) + value;
-                operand.back() = std::any_cast<double>(operand.back()) + value;
 
                 totalPlus--;
             }
-
-            while(totalMinus)
-            {
-                value = std::any_cast<double>(operand.back());
+            else {
+                value = operand.back();
                 operand.pop_back();
-                operand.back() = std::any_cast<double>(operand.back()) - value;
+                if (value.type() == typeid(std::string) || operand.back().type() == typeid(std::string))
+                {
+                    int start =  numToStringCast(operand.back()).find(numToStringCast(value));
+                    int end =  numToStringCast(value).size();
+                    operand.back() = numToStringCast(operand.back()).erase(start, end);
+                }
+                else {
+                    operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) - std::stod(numToStringCast(value)));
+                }
 
                 totalMinus--;
             }
         }
+
+        while(totalPlus)
+        {
+            value = operand.back();
+            operand.pop_back();
+            if (value.type() == typeid(std::string) || operand.back().type() == typeid(std::string))
+            {
+                operand.back() = numToStringCast(operand.back()).append(numToStringCast(value));
+            }
+            else {
+                operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) + std::stod(numToStringCast(value)));
+            }
+
+            totalPlus--;
+        }
+
+        while(totalMinus)
+        {
+            value = operand.back();
+            operand.pop_back();
+            if (value.type() == typeid(std::string) || operand.back().type() == typeid(std::string))
+            {
+                int start =  numToStringCast(operand.back()).find(numToStringCast(value));
+                int end =  numToStringCast(value).size();
+                operand.back() = numToStringCast(operand.back()).erase(start, end);
+            }
+            else {
+                operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) - std::stod(numToStringCast(value)));
+            }
+
+            totalMinus--;
+        }
     }
 
-    return numToNumCast(operand.front());
+    return operand;
 }
 
 std::vector<std::any> BasicVisitorImpl::multMathAction(std::vector<BasicParser::MultiplyingExpressionContext*> mulExpr)
@@ -186,47 +291,47 @@ std::vector<std::any> BasicVisitorImpl::multMathAction(std::vector<BasicParser::
 
         int totalTimes = action->TIMES().size();
         int totalDivides = action->DIV().size();
-        int timesPos = 0, dividesPos = 0;
 
         std::string currGroup = action->getText();
 
         while (totalTimes && totalDivides)
         {
-            int difference = currGroup.find_last_of('*' + timesPos) - currGroup.find_last_of('/' + dividesPos);
+            int leftSymbol = currGroup.find(action->TIMES(totalTimes - 1)->getSymbol()->getText(), totalTimes);
+            int rightSymbol = currGroup.find(action->DIV(totalDivides - 1)->getText(), totalDivides);
+
+            int difference = leftSymbol - rightSymbol;
 
             if (difference > 0)
             {
-                value = std::any_cast<double>(operand.back());
+                value = std::stod(numToStringCast(operand.back()));
                 operand.pop_back();
-                operand.back() = std::any_cast<double>(operand.back()) * value;
+                operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) * value);
 
                 totalTimes--;
-                timesPos++;
             }
             else {
-                value = std::any_cast<double>(operand.back());
+                value = std::stod(numToStringCast(operand.back()));
                 operand.pop_back();
-                operand.back() = std::any_cast<double>(operand.back()) / value;
+                operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) / value);
 
                 totalDivides--;
-                dividesPos++;
             }
         }
 
         while (totalTimes)
         {
-            value = std::any_cast<double>(operand.back());
+            value = std::stod(numToStringCast(operand.back()));
             operand.pop_back();
-            operand.back() = std::any_cast<double>(operand.back()) * value;
+            operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) * value);
 
             totalTimes--;
         }
 
         while (totalDivides)
         {
-            value = std::any_cast<double>(operand.back());
+            value = std::stod(numToStringCast(operand.back()));
             operand.pop_back();
-            operand.back() = std::any_cast<double>(operand.back()) / value;
+            operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) / value);
 
             totalDivides--;
         }
@@ -242,33 +347,31 @@ std::vector<std::any> BasicVisitorImpl::expoMathAction(std::vector<BasicParser::
 
     for (BasicParser::ExponentExpressionContext* action : expoExpr)
     {
-        operand.push_back(signMathAction(action->signExpression()));
+        std::vector<std::any> tmpVals = signMathAction(action->signExpression());
+        operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
 
-        if(operand.size() > 1)
+        for (auto i = 0; i < action->EXPONENT().size(); i++)
         {
-            for (auto i = 0; i < action->EXPONENT().size(); i++)
-            {
-                value = std::any_cast<double>(operand.back());
-                operand.pop_back();
-                operand.back() = pow(std::any_cast<double>(operand.back()), value); // Exponentiation.
-            }
+            value = std::stod(numToStringCast(operand.back()));
+            operand.pop_back();
+            operand.back() = numToNumCast(pow(std::stod(numToStringCast(operand.back())), value)); // Exponentiation.
         }
     }
 
     return operand;
 }
 
-std::any BasicVisitorImpl::signMathAction(std::vector<BasicParser::SignExpressionContext*> signExpr)
+std::vector<std::any> BasicVisitorImpl::signMathAction(std::vector<BasicParser::SignExpressionContext*> signExpr)
 {
+    std::vector<std::any> operand;
+
     for (BasicParser::SignExpressionContext* action : signExpr)
     {
-
         if (action->func_())
         {
-            double result = std::stod(numToStringCast(funcAction(action->func_())));
-            return result;
+            operand.push_back(funcAction(action->func_()));
         }
     }
 
-    return 0.0;
+    return operand;
 }

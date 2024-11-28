@@ -8,6 +8,9 @@
 | \-         | \-       |
 | \*         | \*       |
 | /          | /        |
+| ^          | ^        |
+| と         | AND      |
+| か         | OR       |
 
 > [!IMPORTANT]
 > This was started as a homewrok using ANTLR to explore
@@ -23,4 +26,7 @@ For now the options is:
 
 -   Set variables of type string and number
 -   Print variables and literals like numbers and texts.
--   Can run expressions like +, -, \*, \/
+-   Can run expressions like +, -, \*, \/, ^
+-   When using a string:
+    -   \+ : Appends to string
+    -   \- : Removes from string

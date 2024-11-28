@@ -44,11 +44,18 @@ private:
     std::any expAction(BasicParser::ExpressionContext *expr);
 
     /*
+     * Expressions to be executed
+     *
+     * @param expr Rules to execute
+     */
+    std::any relationsAction(BasicParser::ExpressionContext *expr);
+
+    /*
      * Adding and subtraction expressions
      *
      * @param expr Rules to execute
      */
-    std::any addMathAction(std::vector<BasicParser::RelationalExpressionContext*> expr);
+    std::vector<std::any> addMathAction(std::vector<BasicParser::AddingExpressionContext*> currExp);
 
     /*
      * Division and multiplication expressions
@@ -69,5 +76,5 @@ private:
      *
      * @param expoExpr Rules to execute
      */
-    std::any signMathAction(std::vector<BasicParser::SignExpressionContext*> signExpr);
+    std::vector<std::any> signMathAction(std::vector<BasicParser::SignExpressionContext*> signExpr);
 };

@@ -842,11 +842,11 @@ NOTRACE
     ;
 
 AND
-    : 'AND'
+    : 'と'
     ;
 
 OR
-    : 'OR'
+    : 'か'
     ;
 
 DATA

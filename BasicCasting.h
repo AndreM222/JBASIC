@@ -6,7 +6,7 @@ using namespace antlr4;
      *
      * @param value Value to convert to datatype
      */
-std::any stringToNumberCast(std::string value);
+std::any stringToNumberCast(std::any value);
 
 /*
      * Covert data type to string

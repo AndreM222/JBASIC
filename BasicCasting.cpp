@@ -1,8 +1,8 @@
 #include "BasicCasting.h"
 
-std::any stringToNumberCast(std::string value)
+std::any stringToNumberCast(std::any value)
 {
-    std::string valueText = value;
+    std::string valueText = std::any_cast<std::string>(value);
 
     // Use stringstreams to detect the type
     if (valueText.find('.') == std::string::npos)
