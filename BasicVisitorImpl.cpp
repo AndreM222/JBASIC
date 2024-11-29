@@ -1,60 +1,118 @@
 #include "BasicVisitorImpl.h"
 #include <any>
+#include <cstddef>
 #include <iostream>
 #include <ostream>
+#include <string>
+#include <vector>
 
-std::unordered_map <BasicParser::LinenumberContext*, BasicParser::LineContext*> listOfLines;
+std::unordered_map <int, BasicParser::LineContext*> listOfLines;
 std::unordered_map<std::string, std::any> varValues;
 
 void BasicVisitorImpl::visitFile(BasicParser::ProgContext *fileContext)
 {
     for(BasicParser::LineContext* currLine : fileContext->line())
     {
-        listOfLines.insert({currLine->linenumber(), currLine});
-        visitAction(currLine->linenumber());
+        listOfLines[std::stoi(currLine->linenumber()->getText())] = currLine;
     }
+
+    for(BasicParser::LineContext* currLine : fileContext->line())
+    {
+        visitAction(std::stoi(currLine->linenumber()->getText()));
+    }
+
 }
 
-void BasicVisitorImpl::visitAction(BasicParser::LinenumberContext *lineNumber)
+void BasicVisitorImpl::visitAction(int lineNumber)
 {
     for(auto rule : listOfLines[lineNumber]->amprstmt())
     {
-        if(!rule->statement()) continue;
-
-        statementAction(rule);
+        statementAction(rule->statement());
     }
 }
 
-void BasicVisitorImpl::statementAction(BasicParser::AmprstmtContext *rule)
+void BasicVisitorImpl::statementAction(BasicParser::StatementContext *rule)
 {
-        // Print Function
-        if(rule->statement()->printstmt1())
+    // Print Function
+    if(rule->printstmt1())
+    {
+        BasicParser::PrintlistContext* printList = rule->printstmt1()->printlist();
+
+        for(BasicParser::ExpressionContext* action : printList->expression())
         {
-            BasicParser::PrintlistContext* printList = rule->statement()->printstmt1()->printlist();
+            // Get casted variable value
+            std::string msg = numToStringCast(expAction(action));
 
-            for(BasicParser::ExpressionContext* action : printList->expression())
+            // Print if value exists
+            if (!msg.empty()) std::cout << msg << std::endl;
+        }
+    }
+
+    // Make Variable
+    if(rule->letstmt())
+    {
+        BasicParser::VariableassignmentContext* expr = rule->letstmt()->variableassignment();
+
+
+        for(auto action : expr->exprlist()->expression())
+        {
+            std::string variableName = expr->vardecl()->var_()->varname()->getText();
+
+            // Set variable
+            varValues[variableName] = expAction(action);
+        }
+    }
+
+    if (rule->ifstmt())
+    {
+        bool condition = std::stoi(numToStringCast(expAction(rule->ifstmt()->expression()))) != 0;
+
+        if (!condition) return;
+
+        for (auto stmt : rule->ifstmt()->statement()) {
+            statementAction(stmt);
+        }
+    }
+
+    if(rule->forstmt())
+    {
+        std::string setterName = rule->forstmt()->vardecl(0)->getText();
+        std::string nextVar = rule->forstmt()->vardecl(1)->getText();
+
+        varValues[setterName] = expAction(rule->forstmt()->expression(0));
+        double condition = std::stoi(numToStringCast(expAction(rule->forstmt()->expression(1))));
+        double increment = std::stoi(numToStringCast(expAction(rule->forstmt()->expression(2))));
+
+        while (std::stoi(numToStringCast(varValues[setterName])) <= condition) {
+            for(auto action : rule->forstmt()->statement())
             {
-                // Get casted variable value
-                std::string msg = numToStringCast(expAction(action));
-
-                // Print if value exists
-                if (!msg.empty()) std::cout << msg << std::endl;
+                statementAction(action);
             }
+
+            varValues[nextVar] = numToNumCast(std::stoi(numToStringCast(varValues[nextVar])) + increment);
         }
 
-        // Make Variable
-        if(rule->statement()->letstmt())
+        varValues.erase(setterName);
+    }
+
+    if(rule->inputstmt())
+    {
+        BasicParser::VarlistContext* variables = rule->inputstmt()->varlist();
+
+        std::string msg = rule->inputstmt()->STRINGLITERAL()->getText();
+        if(!msg.empty() && rule->inputstmt()->STRINGLITERAL()) std::cout << msg.substr(1, msg.size() - 2);
+
+        for(size_t i = 0; i < variables->vardecl().size(); i++)
         {
-            BasicParser::VariableassignmentContext* expr = rule->statement()->letstmt()->variableassignment();
+            std::string variableName = variables->vardecl(i)->getText();
+            std::string var;
 
-            for(auto action : expr->exprlist()->expression())
-            {
-                std::string variableName = expr->vardecl()->var_()->varname()->getText();
+            std::cin >> var;
 
-                // Set variable
-                varValues[variableName] = expAction(action);
-            }
+            varValues[variableName] = stringToNumberCast(var);
         }
+    }
+
 }
 
 std::any BasicVisitorImpl::expAction(BasicParser::ExpressionContext *expr)
@@ -78,6 +136,7 @@ std::any BasicVisitorImpl::funcAction(BasicParser::Func_Context *funcType)
     if(funcType->STRINGLITERAL())
     {
         std::string value = funcType->getText();
+
         return value.substr(1, value.size() - 2);
     }
 
@@ -135,6 +194,7 @@ std::any BasicVisitorImpl::relationsAction(BasicParser::ExpressionContext *expr)
         if(!currExp->addingExpression().empty())
         {
             std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
+
             operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
         }
     }
@@ -455,7 +515,7 @@ std::vector<std::any> BasicVisitorImpl::expoMathAction(std::vector<BasicParser::
         std::vector<std::any> tmpVals = signMathAction(action->signExpression());
         operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
 
-        for (auto i = 0; i < action->EXPONENT().size(); i++)
+        for (size_t i = 0; i < action->EXPONENT().size(); i++)
         {
             value = std::stod(numToStringCast(operand.back()));
             operand.pop_back();

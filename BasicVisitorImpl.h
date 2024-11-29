@@ -19,14 +19,14 @@ private:
      *
      * @param lineNumber Number of line to obtain rules
      */
-    void visitAction(BasicParser::LinenumberContext *lineNumber);
+    void visitAction(int lineNumber);
 
     /*
      * Actions to be executed
      *
      * @param rule Rules to execute
      */
-    void statementAction(BasicParser::AmprstmtContext *rule);
+    void statementAction(BasicParser::StatementContext *rule);
 
 
     /*

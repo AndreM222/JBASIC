@@ -103,8 +103,7 @@ statement
     | ongotostmt
     | ongosubstmt
     | ifstmt
-    | forstmt1
-    | forstmt2
+    | forstmt
     | inputstmt
     | tabstmt
     | dimstmt
@@ -168,17 +167,15 @@ neq
 
 ifstmt
     : IF expression THEN? (statement | linenumber)
+    | IF expression THEN? (statement | linenumber)* END IF
     ;
 
 // for stmt 1 puts the for-next on one line
-forstmt1
-    : FOR vardecl EQ expression TO expression (STEP expression)? (statement NEXT vardecl?)?
+forstmt
+    : FOR vardecl EQ expression TO expression (STEP expression)? (statement NEXT vardecl?)
+    | FOR vardecl EQ expression TO expression (STEP expression)? (statement | linenumber)* (NEXT vardecl?)
     ;
 
-// for stmt 2 puts the for, the statment, and the next on 3 lines.  It needs "nextstmt"
-forstmt2
-    : FOR vardecl EQ expression TO expression (STEP expression)?
-    ;
 
 nextstmt
     : NEXT (vardecl (',' vardecl)*)?
@@ -578,15 +575,15 @@ GOSUB
     ;
 
 IF
-    : 'IF'
+    : 'もし'
     ;
 
 NEXT
-    : 'NEXT'
+    : '次'
     ;
 
 THEN
-    : 'THEN'
+    : 'ぞの後'
     ;
 
 REM
@@ -670,7 +667,7 @@ RUN
     ;
 
 END
-    : 'END'
+    : '終了'
     ;
 
 LET
@@ -682,19 +679,19 @@ EQ
     ;
 
 FOR
-    : 'FOR'
+    : 'ために'
     ;
 
 TO
-    : 'TO'
+    : 'に'
     ;
 
 STEP
-    : 'STEP'
+    : '増加'
     ;
 
 INPUT
-    : 'INPUT'
+    : '入力'
     ;
 
 SEMICOLON
