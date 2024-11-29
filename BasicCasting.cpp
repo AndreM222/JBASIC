@@ -1,8 +1,10 @@
 #include "BasicCasting.h"
+#include <any>
+#include <string>
 
 std::any stringToNumberCast(std::any value)
 {
-    std::string valueText = std::any_cast<std::string>(value);
+    std::string valueText = anyToStringCast(value);
 
     // Use stringstreams to detect the type
     if (valueText.find('.') == std::string::npos)
@@ -34,26 +36,9 @@ std::any stringToNumberCast(std::any value)
     return 0;
 }
 
-std::string numToStringCast(std::any value)
-{
-    if(value.type() == typeid(std::string))
-        return std::any_cast<std::string> (value);
-
-    if (value.type() == typeid(float))
-        return std::to_string(std::any_cast<float> (value));
-
-    if (value.type() == typeid(int))
-        return std::to_string(std::any_cast<int> (value));
-
-    if (value.type() == typeid(double))
-        return std::to_string(std::any_cast<double> (value));
-
-    return "";
-}
-
 std::any numToNumCast(std::any value)
 {
-    std::string newVal = numToStringCast(value);
+    std::string newVal = anyToStringCast(value);
 
     if(newVal.find('.'))
     {
@@ -72,4 +57,72 @@ std::any numToNumCast(std::any value)
     value = stringToNumberCast(newVal);
 
     return value;
+}
+
+std::string anyToStringCast(std::any value)
+{
+    if(value.type() == typeid(std::string))
+        return std::any_cast<std::string> (value);
+
+    if (value.type() == typeid(float))
+        return std::to_string(anyToFloatCast(value));
+
+    if (value.type() == typeid(int))
+        return std::to_string(anyToIntCast(value));
+
+    if (value.type() == typeid(double))
+        return std::to_string(anyToDoubleCast(value));
+
+    return "";
+}
+
+double anyToDoubleCast(std::any value)
+{
+    if(value.type() == typeid(double))
+        return std::any_cast<double>(value);
+
+    if(value.type() == typeid(std::string))
+        return std::stod(anyToStringCast(value));
+
+    if(value.type() == typeid(int))
+        return anyToIntCast(anyToIntCast(value));
+
+    if(value.type() == typeid(float))
+        return anyToFloatCast(value);
+
+    return 0.0;
+}
+
+int anyToIntCast(std::any value)
+{
+    if(value.type() == typeid(int))
+        return std::any_cast<int>(value);
+
+    if(value.type() == typeid(double))
+        return static_cast<int>(anyToDoubleCast(value));
+
+    if(value.type() == typeid(std::string))
+        return std::stoi(anyToStringCast(value));
+
+    if(value.type() == typeid(float))
+        return static_cast<int>(anyToFloatCast(value));
+
+    return 0;
+}
+
+float anyToFloatCast(std::any value)
+{
+    if(value.type() == typeid(float))
+        return std::any_cast<float>(value);
+
+    if(value.type() == typeid(int))
+        return anyToIntCast(value);
+
+    if(value.type() == typeid(double))
+        return static_cast<float>(anyToDoubleCast(value));
+
+    if(value.type() == typeid(std::string))
+        return std::stof(anyToStringCast(value));
+
+    return 0;
 }

@@ -25,7 +25,7 @@ void BasicVisitorImpl::visitFile(BasicParser::ProgContext *fileContext)
 
 void BasicVisitorImpl::visitAction(int lineNumber)
 {
-    for(auto rule : listOfLines[lineNumber]->amprstmt())
+    for(BasicParser::AmprstmtContext* rule : listOfLines[lineNumber]->amprstmt())
     {
         statementAction(rule->statement());
     }
@@ -41,7 +41,7 @@ void BasicVisitorImpl::statementAction(BasicParser::StatementContext *rule)
         for(BasicParser::ExpressionContext* action : printList->expression())
         {
             // Get casted variable value
-            std::string msg = numToStringCast(expAction(action));
+            std::string msg = anyToStringCast(expAction(action));
 
             // Print if value exists
             if (!msg.empty()) std::cout << msg << std::endl;
@@ -54,7 +54,7 @@ void BasicVisitorImpl::statementAction(BasicParser::StatementContext *rule)
         BasicParser::VariableassignmentContext* expr = rule->letstmt()->variableassignment();
 
 
-        for(auto action : expr->exprlist()->expression())
+        for(BasicParser::ExpressionContext* action : expr->exprlist()->expression())
         {
             std::string variableName = expr->vardecl()->var_()->varname()->getText();
 
@@ -65,11 +65,11 @@ void BasicVisitorImpl::statementAction(BasicParser::StatementContext *rule)
 
     if (rule->ifstmt())
     {
-        bool condition = std::stoi(numToStringCast(expAction(rule->ifstmt()->expression()))) != 0;
+        bool condition = anyToIntCast(expAction(rule->ifstmt()->expression())) != 0;
 
         if (!condition) return;
 
-        for (auto stmt : rule->ifstmt()->statement()) {
+        for (BasicParser::StatementContext* stmt : rule->ifstmt()->statement()) {
             statementAction(stmt);
         }
     }
@@ -80,16 +80,16 @@ void BasicVisitorImpl::statementAction(BasicParser::StatementContext *rule)
         std::string nextVar = rule->forstmt()->vardecl(1)->getText();
 
         varValues[setterName] = expAction(rule->forstmt()->expression(0));
-        double condition = std::stoi(numToStringCast(expAction(rule->forstmt()->expression(1))));
-        double increment = std::stoi(numToStringCast(expAction(rule->forstmt()->expression(2))));
+        double condition = anyToIntCast(expAction(rule->forstmt()->expression(1)));
+        double increment = anyToIntCast(expAction(rule->forstmt()->expression(2)));
 
-        while (std::stoi(numToStringCast(varValues[setterName])) <= condition) {
-            for(auto action : rule->forstmt()->statement())
+        while (anyToIntCast(varValues[setterName]) <= condition) {
+            for(BasicParser::StatementContext* action : rule->forstmt()->statement())
             {
                 statementAction(action);
             }
 
-            varValues[nextVar] = numToNumCast(std::stoi(numToStringCast(varValues[nextVar])) + increment);
+            varValues[nextVar] = numToNumCast(anyToIntCast(varValues[nextVar]) + increment);
         }
 
         varValues.erase(setterName);
@@ -207,9 +207,9 @@ std::any BasicVisitorImpl::relationsAction(BasicParser::ExpressionContext *expr)
 
         if(difference > 0)
         {
-            val1 = numToStringCast(operand.back());
+            val1 = anyToStringCast(operand.back());
             operand.pop_back();
-            val2 = std::any_cast<std::string>(operand.back());
+            val2 = anyToStringCast(operand.back());
 
             if ((!val2.empty() && val2 != "0") && (!val1.empty() && val1 != "0"))
                 operand.back() = 1;
@@ -219,9 +219,9 @@ std::any BasicVisitorImpl::relationsAction(BasicParser::ExpressionContext *expr)
             totalAnd--;
         }
         else {
-            val1 = numToStringCast(operand.back());
+            val1 = anyToStringCast(operand.back());
             operand.pop_back();
-            val2 = numToStringCast(operand.back());
+            val2 = anyToStringCast(operand.back());
 
             if ((!val2.empty() && val2 != "0") || (!val1.empty() && val1 != "0"))
                 operand.back() = 1;
@@ -234,9 +234,9 @@ std::any BasicVisitorImpl::relationsAction(BasicParser::ExpressionContext *expr)
 
     while(totalOr)
     {
-        val1 = numToStringCast(operand.back());
+        val1 = anyToStringCast(operand.back());
         operand.pop_back();
-        val2 = numToStringCast(operand.back());
+        val2 = anyToStringCast(operand.back());
 
         if ((!val2.empty() && val2 != "0") || (!val1.empty() && val1 != "0"))
             operand.back() = 1;
@@ -248,9 +248,9 @@ std::any BasicVisitorImpl::relationsAction(BasicParser::ExpressionContext *expr)
 
     while(totalAnd)
     {
-        val1 = numToStringCast(operand.back());
+        val1 = anyToStringCast(operand.back());
         operand.pop_back();
-        val2 = numToStringCast(operand.back());
+        val2 = anyToStringCast(operand.back());
 
         if ((!val2.empty() && val2 != "0") && (!val1.empty() && val1 != "0"))
             operand.back() = 1;
@@ -272,8 +272,8 @@ int BasicVisitorImpl::relopAction(BasicParser::RelationalExpressionContext* curr
         std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
         operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
 
-        std::string value1 = numToStringCast(operand[0]);
-        std::string value2 = numToStringCast(operand[1]);
+        std::string value1 = anyToStringCast(operand[0]);
+        std::string value2 = anyToStringCast(operand[1]);
 
         if (operand[0].type() == operand[0].type() && value1 == value2)
             return 1;
@@ -286,8 +286,8 @@ int BasicVisitorImpl::relopAction(BasicParser::RelationalExpressionContext* curr
         std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
         operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
 
-        std::string value1 = numToStringCast(operand[0]);
-        std::string value2 = numToStringCast(operand[1]);
+        std::string value1 = anyToStringCast(operand[0]);
+        std::string value2 = anyToStringCast(operand[1]);
 
         if (operand[0].type() != operand[0].type() || value1 != value2)
             return 1;
@@ -300,8 +300,8 @@ int BasicVisitorImpl::relopAction(BasicParser::RelationalExpressionContext* curr
         std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
         operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
 
-        double value1 = std::stoi(numToStringCast(operand[0]));
-        double value2 = std::stoi(numToStringCast(operand[1]));
+        double value1 = anyToIntCast(operand[0]);
+        double value2 = anyToIntCast(operand[1]);
 
         if (value1 > value2)
             return 1;
@@ -314,8 +314,8 @@ int BasicVisitorImpl::relopAction(BasicParser::RelationalExpressionContext* curr
         std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
         operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
 
-        double value1 = std::stoi(numToStringCast(operand[0]));
-        double value2 = std::stoi(numToStringCast(operand[1]));
+        double value1 = anyToIntCast(operand[0]);
+        double value2 = anyToIntCast(operand[1]);
 
         if (value1 >= value2)
             return 1;
@@ -328,8 +328,8 @@ int BasicVisitorImpl::relopAction(BasicParser::RelationalExpressionContext* curr
         std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
         operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
 
-        double value1 = std::stoi(numToStringCast(operand[0]));
-        double value2 = std::stoi(numToStringCast(operand[1]));
+        double value1 = anyToIntCast(operand[0]);
+        double value2 = anyToIntCast(operand[1]);
 
         if (value1 < value2)
             return 1;
@@ -342,8 +342,8 @@ int BasicVisitorImpl::relopAction(BasicParser::RelationalExpressionContext* curr
         std::vector<std::any> tmpVals = addMathAction(currExp->addingExpression());
         operand.insert(operand.end(), tmpVals.begin(), tmpVals.end());
 
-        double value1 = std::stoi(numToStringCast(operand[0]));
-        double value2 = std::stoi(numToStringCast(operand[1]));
+        double value1 = anyToIntCast(operand[0]);
+        double value2 = anyToIntCast(operand[1]);
 
         if (value1 <= value2)
             return 1;
@@ -382,10 +382,10 @@ std::vector<std::any> BasicVisitorImpl::addMathAction(std::vector<BasicParser::A
                 operand.pop_back();
                 if (value.type() == typeid(std::string) || operand.back().type() == typeid(std::string))
                 {
-                    operand.back() = numToStringCast(operand.back()).append(numToStringCast(value));
+                    operand.back() = anyToStringCast(operand.back()).append(anyToStringCast(value));
                 }
                 else {
-                    operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) + std::stod(numToStringCast(value)));
+                    operand.back() = numToNumCast(anyToDoubleCast(operand.back()) + anyToDoubleCast(value));
                 }
 
                 totalPlus--;
@@ -395,12 +395,12 @@ std::vector<std::any> BasicVisitorImpl::addMathAction(std::vector<BasicParser::A
                 operand.pop_back();
                 if (value.type() == typeid(std::string) || operand.back().type() == typeid(std::string))
                 {
-                    int start =  numToStringCast(operand.back()).find(numToStringCast(value));
-                    int end =  numToStringCast(value).size();
-                    operand.back() = numToStringCast(operand.back()).erase(start, end);
+                    int start =  anyToStringCast(operand.back()).find(anyToStringCast(value));
+                    int end =  anyToStringCast(value).size();
+                    operand.back() = anyToStringCast(operand.back()).erase(start, end);
                 }
                 else {
-                    operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) - std::stod(numToStringCast(value)));
+                    operand.back() = numToNumCast(anyToDoubleCast(operand.back()) - anyToDoubleCast(value));
                 }
 
                 totalMinus--;
@@ -413,10 +413,10 @@ std::vector<std::any> BasicVisitorImpl::addMathAction(std::vector<BasicParser::A
             operand.pop_back();
             if (value.type() == typeid(std::string) || operand.back().type() == typeid(std::string))
             {
-                operand.back() = numToStringCast(operand.back()).append(numToStringCast(value));
+                operand.back() = anyToStringCast(operand.back()).append(anyToStringCast(value));
             }
             else {
-                operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) + std::stod(numToStringCast(value)));
+                operand.back() = numToNumCast(anyToDoubleCast(operand.back()) + anyToDoubleCast(value));
             }
 
             totalPlus--;
@@ -428,12 +428,12 @@ std::vector<std::any> BasicVisitorImpl::addMathAction(std::vector<BasicParser::A
             operand.pop_back();
             if (value.type() == typeid(std::string) || operand.back().type() == typeid(std::string))
             {
-                int start =  numToStringCast(operand.back()).find(numToStringCast(value));
-                int end =  numToStringCast(value).size();
-                operand.back() = numToStringCast(operand.back()).erase(start, end);
+                int start =  anyToStringCast(operand.back()).find(anyToStringCast(value));
+                int end =  anyToStringCast(value).size();
+                operand.back() = anyToStringCast(operand.back()).erase(start, end);
             }
             else {
-                operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) - std::stod(numToStringCast(value)));
+                operand.back() = numToNumCast(anyToDoubleCast(operand.back()) - anyToDoubleCast(value));
             }
 
             totalMinus--;
@@ -468,16 +468,16 @@ std::vector<std::any> BasicVisitorImpl::multMathAction(std::vector<BasicParser::
 
             if (difference > 0)
             {
-                value = std::stod(numToStringCast(operand.back()));
+                value = anyToDoubleCast(operand.back());
                 operand.pop_back();
-                operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) * value);
+                operand.back() = numToNumCast(anyToDoubleCast(operand.back()) * value);
 
                 totalTimes--;
             }
             else {
-                value = std::stod(numToStringCast(operand.back()));
+                value = anyToDoubleCast(operand.back());
                 operand.pop_back();
-                operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) / value);
+                operand.back() = numToNumCast(anyToDoubleCast(operand.back()) / value);
 
                 totalDivides--;
             }
@@ -485,18 +485,18 @@ std::vector<std::any> BasicVisitorImpl::multMathAction(std::vector<BasicParser::
 
         while (totalTimes)
         {
-            value = std::stod(numToStringCast(operand.back()));
+            value = anyToDoubleCast(operand.back());
             operand.pop_back();
-            operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) * value);
+            operand.back() = numToNumCast(anyToDoubleCast(operand.back()) * value);
 
             totalTimes--;
         }
 
         while (totalDivides)
         {
-            value = std::stod(numToStringCast(operand.back()));
+            value = anyToDoubleCast(operand.back());
             operand.pop_back();
-            operand.back() = numToNumCast(std::stod(numToStringCast(operand.back())) / value);
+            operand.back() = numToNumCast(anyToDoubleCast(operand.back()) / value);
 
             totalDivides--;
         }
@@ -517,9 +517,9 @@ std::vector<std::any> BasicVisitorImpl::expoMathAction(std::vector<BasicParser::
 
         for (size_t i = 0; i < action->EXPONENT().size(); i++)
         {
-            value = std::stod(numToStringCast(operand.back()));
+            value = anyToDoubleCast(operand.back());
             operand.pop_back();
-            operand.back() = numToNumCast(pow(std::stod(numToStringCast(operand.back())), value)); // Exponentiation.
+            operand.back() = numToNumCast(pow(anyToDoubleCast(operand.back()), value)); // Exponentiation.
         }
     }
 
