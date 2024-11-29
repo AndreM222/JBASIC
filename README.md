@@ -63,7 +63,7 @@ For now the options are:
 -   The brackets symbolize priority of runtime
 -   If statements in single and multiple lines
 -   For loops in one and multiple lines
-    -   When using multiline actions like loops and others, end action with;
+    -   When using multiline actions like loops and others, end action with
     -   Example: `表示 Num;` -> inside action.
 
 #### Data Types
@@ -85,8 +85,8 @@ For now the options are:
 
 To run first take in consideration that it is set to need a file type `*.jbas`
 
-As an example you can run one of the scripts from the *testScripts* directory.
+As an example you can run one of the scripts from the _testScripts_ directory.
 The interpreter will be in build after you have run the setup part.
 
-To test it out in the *build* folder run `./JBasic ../testScripts/test.jbas`
+To test it out in the _build_ folder run `./JBasic ../testScripts/test.jbas`
 This script is what I used to test new features I added.
