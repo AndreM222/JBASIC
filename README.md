@@ -9,8 +9,8 @@
 | もし       | IF       |
 | 終了       | END      |
 | その後     | THEN     |
-| ために     | FOR      |
-| に         | TO       |
+| 条件       | FOR      |
+| から       | TO       |
 | 増加       | STEP     |
 | 次         | NEXT     |
 | 入力       | INPUT    |

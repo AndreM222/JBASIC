@@ -2,21 +2,21 @@
 20 表示 "*------------------------*"
 30 表示 "We offer +, -, /, *"
 
-40 ために i = 0 に 100 増加 1
+40 条件 i = 0 から 100 増加 1
 50   表示 "----- ------ ------ ------"
 60   表示 "+ [1], - [2], * [3], / [4]"
 70   表示 "To Exit -> [5]"
 
 80   入力 "Please enter the wanted operation: ", operation 終了
 
-90   もし operation <> 5 ぞの後 入力 "Enter values to compute A and B: ", A, B 終了
+90   もし operation <> 5 その後 入力 "Enter values to compute A and B: ", A, B 終了
 
-110  もし operation = 1 ぞの後 表示 "> Value: " + A + B 終了
-120  もし operation = 2 ぞの後 表示 "> Value: " + A - B 終了
-130  もし operation = 3 ぞの後 表示 "> Value: " + A * B 終了
-140  もし operation = 4 ぞの後 表示 "> Value: " + A / B 終了
+110  もし operation = 1 その後 表示 "> Value: " + A + B 終了
+120  もし operation = 2 その後 表示 "> Value: " + A - B 終了
+130  もし operation = 3 その後 表示 "> Value: " + A * B 終了
+140  もし operation = 4 その後 表示 "> Value: " + A / B 終了
 
-150  もし operation = 5 ぞの後 i = 101 終了
+150  もし operation = 5 その後 i = 101 終了
 
 160  次 i
 
